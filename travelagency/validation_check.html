@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>form validation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jost&display=swap');
+
+        body {
+            font-family: Jost;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            padding: 0 1rem;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #ed796d;
+            --primary-red-dark: #eb5948;
+            --primary-green: #26acb7;
+            --primary-green-dark: #2195a0;
+            --primary-blue: #3498db;
+            --primary-blue-light: #469fdb;
+        }
+
+        .container {
+            border-radius: 3px;
+            box-shadow: 0px 2px 10px #444;
+            flex-basis: 400px;
+        }
+
+        .container-heading {
+            text-align: center;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--primary-red);
+        }
+
+        .form {
+            padding: 1rem;
+        }
+
+        .form .form-control {
+            margin-bottom: 1rem;
+            position: relative;
+            width: 100%;
+            display: block;
+        }
+
+        .form .form-control input {
+            display: block;
+            width: 100%;
+            border-radius: 3px;
+            border: 2px solid #777;
+            padding: 0.4rem 0.2rem;
+        }
+
+        .form .form-control label {
+            position: absolute;
+            top: 1%;
+            left: 1%;
+            color: #888;
+            transition: transform 0.4s ease;
+        }
+
+        .form .form-control label.active {
+            transform: translateY(-85%) scale(0.9);
+            color: var(--primary-green);
+        }
+
+        .form .form-control small {
+            visibility: hidden;
+            color: var(--primary-red-dark);
+        }
+
+        .form .form-control.error small {
+            visibility: visible;
+        }
+
+        .form .form-control.error input {
+            border-color: var(--primary-red-dark);
+        }
+
+        .form .form-control.success input {
+            border-color: var(--primary-green-dark);
+        }
+
+        .form .form-submit {
+            color: whitesmoke;
+            background-color: var(--primary-blue);
+            padding: 1rem 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-transform: uppercase;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .form .form-submit:hover {
+            background-color: var(--primary-blue-light);
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div class="container">
+        <h3 class="container-heading">login form</h3>
+        <form class="form" id="form">
+            <div class="form-control">
+                <input type="text" name="username" id="username" />
+                <label for="username">username</label>
+                <small>Error Message</small>
+            </div>
+            <div class="form-control">
+                <input type="text" name="email" id="email" />
+                <label for="email">email</label>
+                <small>Error Message</small>
+            </div>
+            <div class="form-control">
+                <input type="password" name="password" id="password" />
+                <label for="password">password</label>
+                <small>Error Message</small>
+            </div>
+            <div class="form-control">
+                <input type="password" name="conf-password" id="conf-password" />
+                <label for="conf-password">confirm password</label>
+                <small>Error Message</small>
+            </div>
+            <button class="form-submit">
+                submit
+            </button>
+        </form>
+    </div>
+    <script>
+        const formInputs = [...document.querySelectorAll('.form-control input')];
+        const username = document.getElementById('username');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const confPassword = document.getElementById('conf-password');
+        const form = document.getElementById('form');
+        /*for label of inputs*/
+        formInputs.forEach((formInput) => {
+            formInput.addEventListener('focusin', formInputFocusInHandler);
+            formInput.addEventListener('focusout', formInputFocusOutHandler);
+        });
+
+        function formInputFocusInHandler() {
+            const label = this.parentElement.querySelector('label');
+            label.classList.add('active');
+        }
+
+        function formInputFocusOutHandler() {
+            if (this.value === '') {
+                const label = this.parentElement.querySelector('label');
+                label.classList.remove('active');
+            }
+        }
+
+        /*for form validation*/
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            checkRequire([username, email, password, confPassword]);
+            checkEmail(email);
+            checkLength(password, 8, 15);
+            checkMatch(password, confPassword);
+        });
+
+        function checkEmail(input) {
+            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            if (re.test(input.value.trim())) {
+                showSuccess(input);
+            } else {
+                showError(input, 'Email not valid');
+            }
+        }
+
+        function showError(input, message) {
+            const parent = input.parentElement;
+            const smallTag = parent.querySelector('small');
+            if (parent.classList !== 'form-control error')
+                parent.classList = 'form-control error';
+            smallTag.innerText = message;
+        }
+
+        function showSuccess(input) {
+            const parent = input.parentElement;
+            const smallTag = parent.querySelector('small');
+            if (parent.classList !== 'form-control success')
+                parent.classList = 'form-control success';
+
+        }
+
+        function checkRequire(inputArray) {
+            inputArray.forEach(function (input) {
+                if (input.value.trim() === '') {
+                    const message =
+                        input.id.charAt(0).toUpperCase() + input.id.slice(1) + ' is require';
+                    showError(input, message);
+                } else {
+                    showSuccess(input);
+                }
+            });
+        }
+
+        function checkMatch(firstInput, secondInput) {
+            if (firstInput !== secondInput) {
+                const message =
+                    secondInput.id.charAt(0).toUpperCase() +
+                    secondInput.id.slice(1) +
+                    ' not match';
+                showError(secondInput, message);
+            } else {
+                showSuccess(secondInput);
+            }
+        }
+
+        function checkLength(input, min, max) {
+            if (input.value.length < min) {
+                const message =
+                    input.id.charAt(0).toUpperCase() +
+                    input.id.slice(1) +
+                    ` length must be at least ${min} characters`;
+                showError(input, message);
+            } else if (input.value.length > max) {
+                const message =
+                    input.id.charAt(0).toUpperCase() +
+                    input.id.slice(1) +
+                    ` length must be less than ${max} characters`;
+                showError(input, message);
+            } else {
+                showSuccess(input);
+            }
+        }
+
+    </script>
+    <script src="main.js"></script>
+</body>
+
+</html>
